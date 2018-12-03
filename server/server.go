@@ -60,9 +60,3 @@ func (s Server) wrapHandlerFunc(hf func(r Request)) func(http.ResponseWriter, *h
 		hf(req)
 	}
 }
-
-type Controller struct {
-	Path string
-	Get  func(r Request)
-	Post func(r Request)
-}

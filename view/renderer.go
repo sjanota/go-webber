@@ -18,6 +18,7 @@ const (
 
 type Renderer interface {
 	Render(writer http.ResponseWriter, tplName string, data interface{}) error
+	RenderIndex(writer http.ResponseWriter) error
 }
 
 type renderer struct {
@@ -71,15 +72,15 @@ func New(rootPath string) (Renderer, error) {
 }
 
 
-func (v renderer) Render(writer http.ResponseWriter, name string, data interface{}) error {
-	tmpl, ok := v.templates[name]
+func (r renderer) Render(writer http.ResponseWriter, name string, data interface{}) error {
+	tmpl, ok := r.templates[name]
 	if !ok {
 		http.Error(writer, fmt.Sprintf("The template %s does not exist.", name),
 			http.StatusInternalServerError)
 	}
 
-	buf := v.bufferPool.Get()
-	defer v.bufferPool.Put(buf)
+	buf := r.bufferPool.Get()
+	defer r.bufferPool.Put(buf)
 
 	err := tmpl.Execute(buf, data)
 	if err != nil {
@@ -89,4 +90,8 @@ func (v renderer) Render(writer http.ResponseWriter, name string, data interface
 	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, err = buf.WriteTo(writer)
 	return err
+}
+
+func (r renderer) RenderIndex(writer http.ResponseWriter) error {
+	return r.Render(writer, "index.gohtml", nil)
 }
